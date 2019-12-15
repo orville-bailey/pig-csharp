@@ -10,7 +10,7 @@ namespace Pig
         {
             GameTypes gameType = GameTypes.Invalid;
             var playerCount = 0;
-            var players = new List<Tuple<string, int>>();
+            var players = new List<Player>();
 
             do
             {
@@ -51,32 +51,119 @@ namespace Pig
                     Console.WriteLine($"Enter player {i.ToString()}'s name: ");
                     name = Console.ReadLine();
                 } while (name.Equals(string.Empty));
-                players.Add(new Tuple<string, int>(name, 0));
+                players.Add(new Player() { Name=name,Score=0 });
             }
 
-            switch (gameType)
+            try
             {
-                case GameTypes.Pig:
-                    break;
-                case GameTypes.BigPig:
-                    throw new NotImplementedException();
-                case GameTypes.Hog:
-                    throw new NotImplementedException();
-                case GameTypes.TwoDicePig:
-                    throw new NotImplementedException();
-                default:
-                    throw new Exception($"Unexpected gameType: {gameType.ToString()}");
+                switch (gameType)
+                {
+                    case GameTypes.Pig:
+                        PlayPig(players);
+                        break;
+                    case GameTypes.BigPig:
+                        throw new NotImplementedException();
+                    case GameTypes.Hog:
+                        throw new NotImplementedException();
+                    case GameTypes.TwoDicePig:
+                        throw new NotImplementedException();
+                    default:
+                        throw new Exception($"Unexpected gameType: {gameType.ToString()}");
+                }
             }
+            catch (Exception ex)
+            {
 
+            }
         }
 
         /// <summary>
         /// Plays with default pig rules
         /// </summary>
         /// <returns>Name of winning player</returns>
-        private static string PlayPig()
+        private static string PlayPig(List<Player> players)
         {
-            return string.Empty;
+            var winner = string.Empty;
+
+            do
+            {
+                for (int i = 0; i < players.Count; i++)
+                {
+                    var playerHolder = players.ElementAt(i);
+                    TakeTurn(ref playerHolder);
+                    if (playerHolder.Score >= 100)
+                    {
+                        winner = playerHolder.Name;
+                        break;
+                    }
+                }
+                
+            } while (winner.Equals(string.Empty));
+
+            return winner;
         }
+
+        private static void TakeTurn(ref Player player)
+        {
+            var userInput = string.Empty;
+            var isStillPlayerTurn = true;
+            do
+            {
+                do
+                {
+                    Console.WriteLine("Roll (r) or Pass (p)?");
+                    Console.WriteLine($"Your current score is {player.Score}");
+                    userInput = Console.ReadKey().KeyChar.ToString();
+                    Console.WriteLine("");
+
+
+                    if (!userInput.Equals("r") && !userInput.Equals("p"))
+                    {
+                        userInput = string.Empty;
+                    }
+                    else
+                    {
+                        switch (userInput)
+                        {
+                            case "r":
+                                var roll = Die.Roll();
+                                Console.WriteLine($"{player.Name} rolled a {roll.ToString()}.");
+                                if (roll == 1)
+                                {
+                                    player.Score = 0;
+                                    isStillPlayerTurn = false;
+                                }
+                                else
+                                {
+                                    player.Score += roll;
+                                }
+                                break;
+                            case "p":
+                                isStillPlayerTurn = false;
+                                break;
+                            default:
+                                throw new Exception("Bad state due to unexpected user input.");
+                        }
+                    }
+                } while (userInput == string.Empty);
+            } while (isStillPlayerTurn);
+            Console.WriteLine($"{player.Name}'s turn has ended with a score of {player.Score}.");
+        }
+
+        private static class Die
+        {
+            private static Random random;
+            static Die() { random = new Random(); }
+
+            public static int Roll() {
+                return random.Next(6) + 1;
+            }
+        }
+
+        private class Player {
+            public string Name { get; set; }
+            public int Score { get; set; }
+        }
+
     }
 }
