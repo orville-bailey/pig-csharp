@@ -54,12 +54,14 @@ namespace Pig
                 players.Add(new Player() { Name=name,Score=0 });
             }
 
+            var winner = string.Empty;
+
             try
             {
                 switch (gameType)
                 {
                     case GameTypes.Pig:
-                        PlayPig(players);
+                        winner = PlayPig(players);
                         break;
                     case GameTypes.BigPig:
                         throw new NotImplementedException();
@@ -75,6 +77,9 @@ namespace Pig
             {
 
             }
+
+            Console.Clear();
+            Console.WriteLine($"The winner is {winner}!");
         }
 
         /// <summary>
@@ -107,6 +112,7 @@ namespace Pig
         {
             var userInput = string.Empty;
             var isStillPlayerTurn = true;
+            var scoreThisTurn = 0;
             do
             {
                 do
@@ -130,12 +136,17 @@ namespace Pig
                                 Console.WriteLine($"{player.Name} rolled a {roll.ToString()}.");
                                 if (roll == 1)
                                 {
-                                    player.Score = 0;
+                                    scoreThisTurn = 0;
                                     isStillPlayerTurn = false;
                                 }
                                 else
                                 {
-                                    player.Score += roll;
+                                    scoreThisTurn += roll;
+                                }
+
+                                if (player.Score >= 100)
+                                {
+                                    isStillPlayerTurn = false;
                                 }
                                 break;
                             case "p":
@@ -147,6 +158,7 @@ namespace Pig
                     }
                 } while (userInput == string.Empty);
             } while (isStillPlayerTurn);
+            player.Score += scoreThisTurn;
             Console.WriteLine($"{player.Name}'s turn has ended with a score of {player.Score}.");
         }
 
