@@ -68,7 +68,8 @@ namespace Pig
                     case GameTypes.Hog:
                         throw new NotImplementedException();
                     case GameTypes.TwoDicePig:
-                        throw new NotImplementedException();
+                        PlayDoublePig(players);
+                        break;
                     default:
                         throw new Exception($"Unexpected gameType: {gameType.ToString()}");
                 }
@@ -95,7 +96,7 @@ namespace Pig
                 for (int i = 0; i < players.Count; i++)
                 {
                     var playerHolder = players.ElementAt(i);
-                    TakeTurn(ref playerHolder);
+                    TakeTurn_Pig(ref playerHolder);
                     if (playerHolder.Score >= 100)
                     {
                         winner = playerHolder.Name;
@@ -108,7 +109,7 @@ namespace Pig
             return winner;
         }
 
-        private static void TakeTurn(ref Player player)
+        private static void TakeTurn_Pig(ref Player player)
         {
             var userInput = string.Empty;
             var isStillPlayerTurn = true;
@@ -159,6 +160,83 @@ namespace Pig
                 } while (userInput == string.Empty);
             } while (isStillPlayerTurn);
             player.Score += scoreThisTurn;
+            Console.WriteLine($"{player.Name}'s turn has ended with a score of {player.Score}.");
+        }
+
+        private static string PlayDoublePig(List<Player> players)
+        {
+            var winner = string.Empty;
+
+            do
+            {
+                for (int i = 0; i < players.Count; i++)
+                {
+                    var playerHolder = players.ElementAt(i);
+                    TakeTurn_DoublePig(ref playerHolder);
+                    if (playerHolder.Score >= 100)
+                    {
+                        winner = playerHolder.Name;
+                        break;
+                    }
+                }
+            } while (winner.Equals(string.Empty));
+
+            return winner;
+        }
+
+        private static void TakeTurn_DoublePig(ref Player player)
+        {
+            var userInput = string.Empty;
+            var isStillPlayerTurn = true;
+            var turnScore = 0;
+
+            do
+            {
+                do
+                {
+                    Console.WriteLine("Roll (r) or Pass (p)?");
+                    Console.WriteLine($"Your current score is {player.Score + turnScore}");
+                    userInput = Console.ReadKey().KeyChar.ToString();
+                    Console.WriteLine("");
+
+
+                    if (!userInput.Equals("r") && !userInput.Equals("p"))
+                    {
+                        userInput = string.Empty;
+                    }
+                    else
+                    {
+                        switch (userInput)
+                        {
+                            case "r":
+                                var roll1 = Die.Roll();
+                                var roll2 = Die.Roll();
+                                Console.WriteLine($"{player.Name} rolled {roll1.ToString()}, {roll2.ToString()}.");
+                                if (roll1 == 1 && roll2 == 1)
+                                {
+                                    player.Score = 0;
+                                    isStillPlayerTurn = false;
+                                }
+                                else if (roll1 == 1 || roll2 == 1)
+                                {
+                                    turnScore = 0;
+                                    isStillPlayerTurn = false;
+                                }
+                                else
+                                {
+                                    turnScore += (roll1+roll2);
+                                }
+                                break;
+                            case "p":
+                                isStillPlayerTurn = false;
+                                break;
+                            default:
+                                throw new Exception("Bad state due to unexpected user input.");
+                        }
+                    }
+                } while (userInput == string.Empty);
+            } while (isStillPlayerTurn);
+            player.Score += turnScore;
             Console.WriteLine($"{player.Name}'s turn has ended with a score of {player.Score}.");
         }
 
